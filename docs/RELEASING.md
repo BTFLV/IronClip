@@ -7,9 +7,8 @@ platforms.
 
 ## Publishing a release
 
-1. Make sure the commit you want to publish is on `main` and its CI run is
-   green.
-2. Open **Actions → Release → Run workflow** and run it on `main`.
+Every push to `main` publishes automatically. To re-publish without a new
+commit, open **Actions → Release → Run workflow** and run it on `main`.
 
 The workflow:
 

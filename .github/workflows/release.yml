@@ -1,9 +1,11 @@
 name: Release
 
-# Builds, tests, validates and then publishes the rolling release
-# "Latest IronClip Release" (tag: rolling). Started manually so only
-# deliberate revisions are published.
+# Every commit on main builds, tests and validates the plug-ins, then updates
+# the rolling release "Latest IronClip Release" (tag: rolling). Can also be
+# started by hand from the Actions tab.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:

@@ -187,7 +187,7 @@ that runs the real plug-in (configure with `-DIRONCLIP_RENDERER=CPU
 | `scripts` | Dependency bootstrap, validation, packaging, signing, release publishing |
 | `tools` | Filter and logo generators, screenshot host |
 
-Releases are published by the manually started *Release* workflow; see
+Every push to `main` updates the rolling release via the *Release* workflow; see
 [docs/RELEASING.md](docs/RELEASING.md), including how to enable macOS signing
 and notarization.
 
