@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AudioComponents</key>
+	<array>
+		<dict>
+			<key>description</key>
+			<string>A simple, powerful, no-nonsense hard clipper</string>
+			<key>factoryFunction</key>
+			<string>IronClip_Factory</string>
+			<key>manufacturer</key>
+			<string>Btfl</string>
+			<key>name</key>
+			<string>BTFLV: IronClip</string>
+			<key>sandboxSafe</key>
+			<true/>
+			<key>subtype</key>
+			<string>IrCl</string>
+			<key>tags</key>
+			<array>
+				<string>Effects</string>
+				<string>Distortion</string>
+			</array>
+			<key>type</key>
+			<string>aufx</string>
+			<key>version</key>
+			<integer>@IRONCLIP_VERSION_INT@</integer>
+		</dict>
+	</array>
+	<key>AudioUnit Version</key>
+	<string>@IRONCLIP_VERSION_HEX@</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>IronClip</string>
+	<key>CFBundleGetInfoString</key>
+	<string>IronClip @PROJECT_VERSION@, Copyright 2026 Philip Mohr</string>
+	<key>CFBundleIdentifier</key>
+	<string>io.github.btflv.audiounit.IronClip</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>IronClip</string>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@PROJECT_VERSION@</string>
+	<key>CFBundleSignature</key>
+	<string>IrCl</string>
+	<key>CFBundleVersion</key>
+	<string>@PROJECT_VERSION@</string>
+	<key>CSResourcesFileMapped</key>
+	<true/>
+	<key>LSMinimumSystemVersion</key>
+	<string>@CMAKE_OSX_DEPLOYMENT_TARGET@</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright 2026 Philip Mohr. MIT License.</string>
+	<key>NSPrincipalClass</key>
+	<string>IronClip_View</string>
+</dict>
+</plist>

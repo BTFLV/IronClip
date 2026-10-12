@@ -1,0 +1,20 @@
+IronClip for Windows
+====================
+
+64-bit build for Windows 10 and 11 (x64). This package contains two plug-in
+formats; install the ones your host uses. Nothing else needs to be installed.
+
+  IronClip.vst3  ->  C:\Program Files\Common Files\VST3\
+                     (copy the whole IronClip.vst3 folder)
+  IronClip.clap  ->  C:\Program Files\Common Files\CLAP\
+
+Copying into "Program Files" asks for administrator permission. Create the
+CLAP folder if it does not exist yet. Then rescan plug-ins in your host
+(some hosts need a restart).
+
+The plug-ins are not code-signed. On Windows 11 with Smart App Control
+switched on, Windows may block unsigned plug-ins from loading.
+
+Uninstall: delete the files above.
+
+More information: https://github.com/BTFLV/IronClip

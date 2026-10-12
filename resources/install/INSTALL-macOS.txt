@@ -1,0 +1,35 @@
+IronClip for macOS
+==================
+
+Universal build: runs natively on Apple Silicon and Intel Macs (macOS 11 or
+later). This package contains three plug-in formats; install the ones your
+host uses.
+
+Install for your user account (no administrator rights needed):
+
+  IronClip.vst3       ->  ~/Library/Audio/Plug-Ins/VST3/
+  IronClip.clap       ->  ~/Library/Audio/Plug-Ins/CLAP/
+  IronClip.component  ->  ~/Library/Audio/Plug-Ins/Components/   (Audio Unit)
+
+Or for all users: the same folders under /Library/Audio/Plug-Ins/.
+
+In Finder, press Cmd+Shift+G and paste the folder path to open it. Create the
+VST3, CLAP or Components folder if it does not exist yet. Then rescan
+plug-ins in your host (some hosts need a restart).
+
+Unsigned builds
+---------------
+If the release notes say this build is NOT notarized, macOS Gatekeeper may
+refuse to load the plug-in ("cannot be opened because the developer cannot be
+verified"). After copying the plug-ins, remove the download quarantine flag
+in Terminal:
+
+  xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/IronClip.vst3
+  xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/CLAP/IronClip.clap
+  xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/IronClip.component
+
+Notarized builds load without this step.
+
+Uninstall: delete the files above.
+
+More information: https://github.com/BTFLV/IronClip

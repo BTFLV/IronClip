@@ -1,0 +1,173 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      sign:
+        description: Sign and notarize the macOS build when the secrets are configured
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}-${{ inputs.sign && 'release' || 'ci' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  dsp-sanitizers:
+    name: DSP tests (ASan + UBSan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Configure
+        run: >
+          cmake -S . -B build -DIRONCLIP_BUILD_PLUGIN=OFF -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=undefined"
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  macos:
+    name: macOS (universal)
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: true
+          persist-credentials: false
+
+      - name: Cache SDKs and prebuilt Skia
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            external/iPlug2/Dependencies/IPlug/VST3_SDK
+            external/iPlug2/Dependencies/IPlug/CLAP_SDK
+            external/iPlug2/Dependencies/IPlug/CLAP_HELPERS
+            external/iPlug2/Dependencies/Build
+          key: deps-macos-${{ hashFiles('scripts/bootstrap.sh', '.gitmodules') }}
+
+      - name: Cache validators
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/tools
+          key: validators-macos-${{ hashFiles('scripts/fetch-validators.sh') }}
+
+      - name: Install Ninja
+        run: brew install ninja
+
+      - name: Fetch dependencies
+        run: scripts/bootstrap.sh mac
+
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          -DIRONCLIP_BUILD_ID="${GITHUB_SHA::7}"
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Benchmark
+        run: build/ironclip-benchmark 2
+
+      - name: Validate (VST3, CLAP, AU)
+        env:
+          IRONCLIP_INSTALL_AU: "1"
+        run: |
+          scripts/fetch-validators.sh build/tools
+          scripts/validate.sh build/out build/tools
+
+      - name: Package
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ inputs.sign && secrets.MACOS_CERTIFICATE_P12_BASE64 || '' }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ inputs.sign && secrets.MACOS_CERTIFICATE_PASSWORD || '' }}
+          MACOS_SIGNING_IDENTITY: ${{ inputs.sign && secrets.MACOS_SIGNING_IDENTITY || '' }}
+          MACOS_NOTARY_KEY_P8_BASE64: ${{ inputs.sign && secrets.MACOS_NOTARY_KEY_P8_BASE64 || '' }}
+          MACOS_NOTARY_KEY_ID: ${{ inputs.sign && secrets.MACOS_NOTARY_KEY_ID || '' }}
+          MACOS_NOTARY_ISSUER_ID: ${{ inputs.sign && secrets.MACOS_NOTARY_ISSUER_ID || '' }}
+          MACOS_NOTARY_APPLE_ID: ${{ inputs.sign && secrets.MACOS_NOTARY_APPLE_ID || '' }}
+          MACOS_NOTARY_TEAM_ID: ${{ inputs.sign && secrets.MACOS_NOTARY_TEAM_ID || '' }}
+          MACOS_NOTARY_PASSWORD: ${{ inputs.sign && secrets.MACOS_NOTARY_PASSWORD || '' }}
+        run: scripts/package.sh build/out dist
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: IronClip-macOS
+          path: |
+            dist/IronClip-macOS-universal.zip
+            dist/macos-signing-status.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  windows:
+    name: Windows (x64)
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: true
+          persist-credentials: false
+
+      - name: Cache SDKs and prebuilt Skia
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            external/iPlug2/Dependencies/IPlug/VST3_SDK
+            external/iPlug2/Dependencies/IPlug/CLAP_SDK
+            external/iPlug2/Dependencies/IPlug/CLAP_HELPERS
+            external/iPlug2/Dependencies/Build
+          key: deps-windows-${{ hashFiles('scripts/bootstrap.sh', '.gitmodules') }}
+
+      - name: Cache validators
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/tools
+          key: validators-windows-${{ hashFiles('scripts/fetch-validators.sh') }}
+
+      - name: Fetch dependencies
+        run: scripts/bootstrap.sh win
+
+      - name: Configure
+        run: cmake -S . -B build -A x64 -DIRONCLIP_BUILD_ID="${GITHUB_SHA::7}"
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Benchmark
+        run: build/Release/ironclip-benchmark.exe 2
+
+      - name: Validate (VST3, CLAP)
+        run: |
+          scripts/fetch-validators.sh build/tools
+          scripts/validate.sh build/out build/tools
+
+      - name: Package
+        run: scripts/package.sh build/out dist
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: IronClip-Windows
+          path: dist/IronClip-Windows-x64.zip
+          if-no-files-found: error
+          retention-days: 14
