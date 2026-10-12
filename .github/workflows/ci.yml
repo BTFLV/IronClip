@@ -1,8 +1,10 @@
 name: CI
 
 on:
+  # Pushes to main are handled by release.yml, which runs this workflow
+  # as its build step before publishing.
   push:
-    branches: [main]
+    branches-ignore: [main]
   pull_request:
   workflow_dispatch:
   workflow_call:
