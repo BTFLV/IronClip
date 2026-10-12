@@ -45,18 +45,18 @@ inline T Clip(T x, T ceiling) noexcept
 
 // Reductions use independent partial accumulators so they vectorise and do
 // not serialise on floating-point latency.
-constexpr int kLanes = 8;
+constexpr int kSumLanes = 8;
 
 template <typename T>
 T PeakAbs(const T* x, int n) noexcept
 {
-  T acc[kLanes] = {};
+  T acc[kSumLanes] = {};
   int i = 0;
-  for (; i + kLanes <= n; i += kLanes)
-    for (int k = 0; k < kLanes; ++k)
+  for (; i + kSumLanes <= n; i += kSumLanes)
+    for (int k = 0; k < kSumLanes; ++k)
       acc[k] = std::max(acc[k], Abs(x[i + k]));
   T peak = T(0);
-  for (int k = 0; k < kLanes; ++k)
+  for (int k = 0; k < kSumLanes; ++k)
     peak = std::max(peak, acc[k]);
   for (; i < n; ++i)
     peak = std::max(peak, Abs(x[i]));
@@ -66,13 +66,13 @@ T PeakAbs(const T* x, int n) noexcept
 template <typename T>
 T SumSquares(const T* x, int n) noexcept
 {
-  T acc[kLanes] = {};
+  T acc[kSumLanes] = {};
   int i = 0;
-  for (; i + kLanes <= n; i += kLanes)
-    for (int k = 0; k < kLanes; ++k)
+  for (; i + kSumLanes <= n; i += kSumLanes)
+    for (int k = 0; k < kSumLanes; ++k)
       acc[k] += x[i + k] * x[i + k];
   T sum = T(0);
-  for (int k = 0; k < kLanes; ++k)
+  for (int k = 0; k < kSumLanes; ++k)
     sum += acc[k];
   for (; i < n; ++i)
     sum += x[i] * x[i];
@@ -82,16 +82,16 @@ T SumSquares(const T* x, int n) noexcept
 template <typename T>
 T SumSquaresProduct(const T* x, const T* g, int n) noexcept
 {
-  T acc[kLanes] = {};
+  T acc[kSumLanes] = {};
   int i = 0;
-  for (; i + kLanes <= n; i += kLanes)
-    for (int k = 0; k < kLanes; ++k)
+  for (; i + kSumLanes <= n; i += kSumLanes)
+    for (int k = 0; k < kSumLanes; ++k)
     {
       const T v = x[i + k] * g[i + k];
       acc[k] += v * v;
     }
   T sum = T(0);
-  for (int k = 0; k < kLanes; ++k)
+  for (int k = 0; k < kSumLanes; ++k)
     sum += acc[k];
   for (; i < n; ++i)
   {

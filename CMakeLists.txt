@@ -42,7 +42,8 @@ endif()
 
 function(ironclip_warnings target)
   if(MSVC)
-    target_compile_options(${target} PRIVATE /W4 /permissive-)
+    # C4324: padding added for alignas() is intended.
+    target_compile_options(${target} PRIVATE /W4 /permissive- /wd4324)
   else()
     target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Wshadow)
   endif()

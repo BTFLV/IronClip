@@ -40,6 +40,12 @@ if(WIN32)
   set_target_properties(iPlug2::IGraphics::Skia PROPERTIES
     INTERFACE_LINK_LIBRARIES "${_skia_libs}"
     INTERFACE_LINK_DIRECTORIES "${_skia_win_dir}")
+
+  # iPlug2's Skia GL3 target omits the glad OpenGL loader, which the IGraphics
+  # headers include and IGraphicsWin.cpp compiles in (#include "glad.c").
+  set_property(TARGET iPlug2::IGraphics::Skia::GL3 APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+    "${IPLUG2_DIR}/Dependencies/IGraphics/glad_GL3/include"
+    "${IPLUG2_DIR}/Dependencies/IGraphics/glad_GL3/src")
 endif()
 
 # Skip optional iPlug2 modules IronClip does not use.
